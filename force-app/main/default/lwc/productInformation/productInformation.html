@@ -1,0 +1,17 @@
+<template>
+	<template for:each={products} for:item="product">
+		<lightning-card key={product.productId} title={product.productCardTitle} icon-name="standard:contact">
+			<table class="slds-table slds-table_cell-buffer slds-table_header-hidden slds-table_bordered">
+				<tbody>
+					<tr>
+						<div class="slds-truncate"></div>
+					</tr>
+				</tbody>
+			</table>
+		</lightning-card>
+	</template>
+
+	<template if:true={error}>
+		<div class="slds-text-color_destructive">{error}</div>
+	</template>
+</template>
