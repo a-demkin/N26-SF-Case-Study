@@ -1,33 +1,46 @@
 public with sharing class ProductInfoController {
+	private static List<String> CARD_SERVICE_QUERY_COMMON_FIELDS = new List<String>{
+		'Id',
+		'CurrencyIsoCode',
+		'Product__r.Name',
+		'Home_Country__c'
+	};
+
 	@AuraEnabled
 	public static List<ProductInfoWrapper> getProductInfo(String caseId) {
 		List<ProductInfoWrapper> wrappers = new List<ProductInfoWrapper>();
 		try {
-			Case case = [
-				SELECT Contact, Contact.Product__c, Contact.Home_Country__c
+			Case caseRecord = [
+				SELECT ContactId, Contact.Product__c, Contact.Home_Country__c
 				FROM Case
 				WHERE Id = :caseId
 			];
 
-			if (case.Contact != null && case.Contact.Product__c != null && case.Contact.Home_Country__c != null) {
-				List<Card_Service__c> cardServices = [
-					SELECT
-						Id, Product__r.Name, Home_Country__c, CurrencyIsoCode, Cost_per_Calendar_Month__c, ATM_Fee_in_other_currencies__c, Card_Replacement_Cost__c
-					FROM Card_Service__c
-					WHERE
-						Product__c = :case.Contact.Product__c
-						AND Home_Country__c = :case.Contact.Home_Country__c
-				];
+			if (caseRecord.ContactId != null) {
+				if (caseRecord.Contact.Product__c != null && caseRecord.Contact.Home_Country__c != null) {
+					List<Schema.FieldSetMember> fsFields = getFieldsFromFieldSet(Constants.CARD_SERVICE_API_NAME, Constants.PRODUCT_INFO_FIELD_SET_NAME);
 
-				if (!cardServices.isEmpty()) {
-					for (Card_Service__c cardService : cardServices) {
-						wrappers.add(new ProductInfoWrapper(cardService));
+					String query = 'SELECT ' + String.join(CARD_SERVICE_QUERY_COMMON_FIELDS, ', ');
+					query += ', ' + String.join(
+						getFieldApiNames(fsFields),
+						', ');
+					query += ' FROM ' + Constants.CARD_SERVICE_API_NAME;
+					query += ' WHERE Product__c = \'' + caseRecord.Contact.Product__c + '\'' +
+						' AND Home_Country__c = \'' + caseRecord.Contact.Home_Country__c + '\'';
+					List<Card_Service__c> cardServices = Database.query(query);
+
+					if (!cardServices.isEmpty()) {
+						for (Card_Service__c cardService : cardServices) {
+							wrappers.add(getProductInfoWrapper(cardService, fsFields));
+						}
+					} else {
+						wrappers.add(getErrorWrapper(Constants.PRODUCT_INFO_NO_PRODUCTS_FOR_CONTACT));
 					}
 				} else {
-					wrappers.add(getErrorWrapper(Constants.PRODUCT_INFO_NO_PRODUCTS_FOR_CONTACT));
+					wrappers.add(getErrorWrapper(Constants.PRODUCT_INFO_CONTACT_FIELDS_MISSING));
 				}
 			} else {
-				wrappers.add(getErrorWrapper(Constants.PRODUCT_INFO_CONTACT_FIELDS_MISSING));
+				wrappers.add(getErrorWrapper(Constants.PRODUCT_INFO_CONTACT_MISSING));
 			}
 		} catch (Exception e) {
 			wrappers.add(getErrorWrapper(e.getMessage()));
@@ -35,46 +48,67 @@ public with sharing class ProductInfoController {
 		return wrappers;
 	}
 
-	private ProductInfoWrapper getErrorWrapper(String errorMessage) {
+	private static ProductInfoWrapper getProductInfoWrapper(Card_Service__c cardService, List<Schema.FieldSetMember> featureFields) {
+		ProductInfoWrapper wrapper = new ProductInfoWrapper();
+		wrapper.productId = cardService.Id;
+		wrapper.currencyCode = cardService.CurrencyIsoCode;
+		wrapper.productName = cardService.Product__r.Name;
+		wrapper.homeCountry = cardService.Home_Country__c;
+		List<ProductInfoFeatureField> wrapperFeatureFields = new List<ProductInfoFeatureField>();
+		for (Schema.FieldSetMember fsField : featureFields) {
+			ProductInfoFeatureField featureField = new ProductInfoFeatureField();
+			featureField.label = fsField.getLabel();
+			featureField.value = cardService.get(fsField.getFieldPath());
+			featureField.dataType = String.valueOf(fsField.getType());
+			wrapperFeatureFields.add(featureField);
+		}
+		wrapper.featureFields = wrapperFeatureFields;
+		return wrapper;
+	}
+
+	private static ProductInfoWrapper getErrorWrapper(String errorMessage) {
 		ProductInfoWrapper wrapper = new ProductInfoWrapper();
 		wrapper.hasError = true;
 		wrapper.errorMessage = errorMessage;
 		return wrapper;
 	}
 
-	private List<Schema.FieldSetMember> getFieldsFromFieldSet(String objectName, String fieldSetName) {
-		return Type.forName(objectName).newInstance().getDescribe().FieldSets.getMap().get(fieldSetName);
+	private static List<Schema.FieldSetMember> getFieldsFromFieldSet(String objectName, String fieldSetName) {
+		return ((SObject)Type.forName(objectName).newInstance()).getSObjectType().getDescribe()
+			.FieldSets.getMap().get(fieldSetName).getFields();
+	}
+
+	private static List<String> getFieldApiNames(List<Schema.FieldSetMember> fsFields) {
+		List<String> fieldApiNames = new List<String>();
+		for (Schema.FieldSetMember fsField : fsFields) {
+			fieldApiNames.add(fsField.getFieldPath());
+		}
+		return fieldApiNames;
 	}
 
 	public class ProductInfoWrapper {
-		public ProductInfoWrapper() {}
-		public ProductInfoWrapper(Card_Service__c cardService) {
-            this.productId = cardService.Id;
-			this.productName = cardService.Product__r.Name;
-			this.homeCountry = cardService.Home_Country__c;
-			this.currencyIsoCode = cardService.CurrencyIsoCode;
-			this.costPerMonth = cardService.Cost_per_Calendar_Month__c;
-			this.atmFeeInOtherCurrencies = cardService.ATM_Fee_in_other_currencies__c;
-			this.cardReplacementCost = cardService.Card_Replacement_Cost__c;
-		}
-
         @AuraEnabled
-        public Id productId {get; set;}
+        public List<ProductInfoFeatureField> featureFields {get; set;}
+		@AuraEnabled
+		public String productId {get; set;}
+		@AuraEnabled
+		public String currencyCode {get; set;}
 		@AuraEnabled
 		public String productName {get; set;}
 		@AuraEnabled
 		public String homeCountry {get; set;}
 		@AuraEnabled
-		public String currencyIsoCode {get; set;}
-		@AuraEnabled
-		public Decimal costPerMonth {get; set;}
-		@AuraEnabled
-		public Decimal atmFeeInOtherCurrencies {get; set;}
-		@AuraEnabled
-		public Decimal cardReplacementCost {get; set;}
-		@AuraEnabled
 		public Boolean hasError {get; set;}
 		@AuraEnabled
 		public String errorMessage {get; set;}
+	}
+
+	public class ProductInfoFeatureField {
+		@AuraEnabled
+		public String label {get; set;}
+		@AuraEnabled
+		public Object value {get; set;}
+		@AuraEnabled
+		public String dataType {get; set;}
 	}
 }

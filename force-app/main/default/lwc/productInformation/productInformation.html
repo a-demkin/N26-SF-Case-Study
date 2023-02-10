@@ -1,17 +1,22 @@
 <template>
-	<template for:each={products} for:item="product">
+	<template if:true={error}>
+		<lightning-card>
+			<div class=" slds-text-color_error slds-text-heading_small slds-text-align_center">{error}</div>
+		</lightning-card>
+	</template>
+	<template if:false={error} for:each={products} for:item="product">
 		<lightning-card key={product.productId} title={product.productCardTitle} icon-name="standard:contact">
 			<table class="slds-table slds-table_cell-buffer slds-table_header-hidden slds-table_bordered">
 				<tbody>
-					<tr>
-						<div class="slds-truncate"></div>
-					</tr>
+					<template for:each={product.featureFields} for:item="field">
+						<tr key={field.label}>
+							<td>{field.label}</td>
+							<td>{field.value}</td>
+						</tr>
+					</template>
 				</tbody>
 			</table>
 		</lightning-card>
-	</template>
-
-	<template if:true={error}>
-		<div class="slds-text-color_destructive">{error}</div>
+		<div key={product.productId} class="slds-m-bottom_medium"></div>
 	</template>
 </template>
