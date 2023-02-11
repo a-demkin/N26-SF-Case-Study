@@ -1,7 +1,5 @@
 @isTest
 public with sharing class ProductInfoControllerTest {
-    private static String HOME_COUNTRY_DE = 'DE';
-    private static String HOME_COUNTRY_FR = 'FR';
     private static Decimal COST_PER_MONTH = 1;
     private static Double ATM_FEE = 1;
     private static Decimal REPLACEMENT_COST = 1;
@@ -16,12 +14,12 @@ public with sharing class ProductInfoControllerTest {
         Contact contactSuccess = new Contact(
             LastName = 'Test Success Contact',
             Product__c = stdProd.Id,
-            Home_Country__c = HOME_COUNTRY_DE
+            Home_Country__c = Constants.HOME_COUNTRY_DE
         );
         Contact contactWithoutMatchingCountry = new Contact(
             LastName = 'Test Contact Without Matching Card Service Country',
             Product__c = stdProd.Id,
-            Home_Country__c = HOME_COUNTRY_FR
+            Home_Country__c = Constants.HOME_COUNTRY_FR
         );
         Contact contactWithMissingFields = new Contact(
             LastName = 'Test Contact Without Product'
@@ -52,7 +50,7 @@ public with sharing class ProductInfoControllerTest {
 
         Card_Service__c cardServiceSuccess = new Card_Service__c(
             Product__c = stdProd.Id,
-            Home_Country__c = HOME_COUNTRY_DE,
+            Home_Country__c = Constants.HOME_COUNTRY_DE,
             Cost_per_Calendar_Month__c = COST_PER_MONTH,
             ATM_Fee_in_other_currencies__c = ATM_FEE,
             Card_Replacement_Cost__c = REPLACEMENT_COST
@@ -66,7 +64,7 @@ public with sharing class ProductInfoControllerTest {
         Id successfulCaseId = [
             SELECT Id
             FROM Case
-            WHERE Contact.Home_Country__c = :HOME_COUNTRY_DE
+            WHERE Contact.Home_Country__c = :Constants.HOME_COUNTRY_DE
                 AND Contact.Product__c = :productId
             LIMIT 1
         ].Id;
@@ -76,7 +74,7 @@ public with sharing class ProductInfoControllerTest {
                 ATM_Fee_in_other_currencies__c, Card_Replacement_Cost__c
             FROM Card_Service__c
             WHERE Product__c = :productId
-                AND Home_Country__c = :HOME_COUNTRY_DE
+                AND Home_Country__c = :Constants.HOME_COUNTRY_DE
         ]);
 
         Test.startTest();
@@ -101,7 +99,7 @@ public with sharing class ProductInfoControllerTest {
         Id caseId = [
             SELECT Id
             FROM Case
-            WHERE Contact.Home_Country__c = :HOME_COUNTRY_FR
+            WHERE Contact.Home_Country__c = :Constants.HOME_COUNTRY_FR
                 AND Contact.Product__c = :productId
             LIMIT 1
         ].Id;
