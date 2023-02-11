@@ -1,18 +1,14 @@
-# Salesforce DX Project: Next Steps
+# N26 Salesforce Case Study
 
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
+## Task 1 - Lightning Component (LWC) for showing Product Information
 
-## How Do You Plan to Deploy Your Changes?
+Several approaches could be implemented to achieve the goal and the decision to choose one should be made only after careful discussion with stakeholders, business analysts and solution architects.
+I've chosen an option with creating a custom juntion object between Contact and Product named "Card Service" (as for the moment information in tables looks like Card Service Fee). Actually, Pricebooks could also be used for the same purpose, but there is no way (at least for Winter 22 Release) to customize the process of adding products to pricebooks.
+Additional fields could be added to the object metadata and then passed to Field Set without code modification and they would be shown by the component.
 
-Do you want to deploy a set of changes, or create a self-contained application? Choose a [development model](https://developer.salesforce.com/tools/vscode/en/user-guide/development-models).
+## Task 2 - Apex Web Service for sharing Contact Information
 
-## Configure Your Salesforce DX Project
-
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
-
-## Read All About It
-
-- [Salesforce Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-- [Salesforce CLI Setup Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference.htm)
+The decision to choose SOAP or REST web service should be based on the details of 3rd-party system which will use the endpoint and some additional requirements from business. A lot should be discussed before the implementation, lots of details should be clarified.
+I decided to implement REST Web Service which takes a list of UUIDs separated by `,` sign.
+Custom Metadata Types could be used to declaratively configure fields mapping (TBD).
+Connected App is required to establish authorized connection between SF and external system.
