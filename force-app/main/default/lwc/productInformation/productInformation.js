@@ -1,7 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import getProductInfo from '@salesforce/apex/ProductInfoController.getProductInfo';
 
-const currencySignsByCodes = {
+const CURRENCY_SIGNS_BY_CODES = {
     'EUR' : '€',
     'GBP' : '£'
 }
@@ -23,30 +23,29 @@ export default class ProductInformation extends LightningElement {
                 }
                 let product = {};
                 product = {...wrapper};
-                product.productCardTitle = wrapper.productName + ' - ' + wrapper.homeCountry;
+                product.productCardTitle = product.productName + ' - ' + product.homeCountry;
                 product.featureFields.forEach(featureField => {
-                    featureField.value = this.prepareField(featureField.dataType, featureField.value, product.currencyCode);
+                    featureField.value = this.formatField(featureField.value, featureField.dataType, product.currencyCode);
                 });
                 this.products.push(product);
             }
-            console.log(this.products);
         })
         .catch(error => {
-            console.log(error);
             this.error = error
         });
     }
 
-    prepareField(dataType, value, currencyCode) {
+    formatField(value, dataType, currencyCode) {
         let fieldValue;
         switch (dataType) {
             case DATA_TYPE_PERCENT:
                 fieldValue = value + '%';
                 break;
             case DATA_TYPE_CURRENCY:
-                fieldValue = value == null ? value : currencySignsByCodes[currencyCode] + ' ' + value;
+                fieldValue = value != null ? (CURRENCY_SIGNS_BY_CODES[currencyCode] + ' ' + value) : value;
                 break;
             default:
+                fieldValue = '' + value;
                 break;
         }
         return fieldValue;

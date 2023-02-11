@@ -5,7 +5,7 @@
 		</lightning-card>
 	</template>
 	<template if:false={error} for:each={products} for:item="product">
-		<lightning-card key={product.productId} title={product.productCardTitle} icon-name="standard:contact">
+		<lightning-card key={product.cardServiceId} title={product.productCardTitle} icon-name="standard:contact">
 			<table class="slds-table slds-table_cell-buffer slds-table_header-hidden slds-table_bordered">
 				<tbody>
 					<template for:each={product.featureFields} for:item="field">
@@ -17,6 +17,6 @@
 				</tbody>
 			</table>
 		</lightning-card>
-		<div key={product.productId} class="slds-m-bottom_medium"></div>
+		<div key={product.cardServiceId} class="slds-m-bottom_medium"></div>
 	</template>
 </template>
