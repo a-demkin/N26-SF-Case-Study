@@ -1,0 +1,22 @@
+<template>
+	<template if:true={error}>
+		<lightning-card>
+			<div class=" slds-text-color_error slds-text-heading_small slds-text-align_center">{error}</div>
+		</lightning-card>
+	</template>
+	<template if:false={error} for:each={products} for:item="product">
+		<lightning-card key={product.cardServiceId} title={product.productCardTitle} icon-name="standard:contact">
+			<table class="slds-table slds-table_cell-buffer slds-table_header-hidden slds-table_bordered">
+				<tbody>
+					<template for:each={product.featureFields} for:item="field">
+						<tr key={field.label}>
+							<td>{field.label}</td>
+							<td>{field.value}</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+		</lightning-card>
+		<div key={product.cardServiceId} class="slds-m-bottom_medium"></div>
+	</template>
+</template>
