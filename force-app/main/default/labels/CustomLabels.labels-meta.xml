@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
     <labels>
+        <fullName>Contact_Info_Error_No_Contacts_Found</fullName>
+        <categories>Contact Info Rest Service</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Contact Info Error No Contacts Found</shortDescription>
+        <value>No Contact Information found for provided UUIDs.</value>
+    </labels>
+    <labels>
+        <fullName>Contact_Info_Error_No_UUIDs_Provided</fullName>
+        <categories>Contact Info Rest Service</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Contact Info Error No UUIDs Provided</shortDescription>
+        <value>No UUIDs provided. Please, pass at least one UUID to receive Contact Information.</value>
+    </labels>
+    <labels>
         <fullName>Product_Info_Contact_fields_are_missing</fullName>
         <categories>Product Info</categories>
         <language>en_US</language>
@@ -10,6 +26,7 @@
     </labels>
     <labels>
         <fullName>Product_Info_No_Contact_for_Current_Case</fullName>
+        <categories>Product Info</categories>
         <language>en_US</language>
         <protected>true</protected>
         <shortDescription>Product Info - No Contact for Current Case</shortDescription>
